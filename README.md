@@ -22,8 +22,7 @@
         - Framework: Blazor, Render Mode: InteractiveServer
         - UI - MudBlazor
     - Backend:
-        - Simple JSON file for storing stores.
-        <!-- - DB: SQL Lite, [sqlite-net-sqlcipher](https://www.nuget.org/packages/sqlite-net-sqlcipher) -->
+        - DB: SQL Lite, [sqlite-net-sqlcipher](https://www.nuget.org/packages/sqlite-net-sqlcipher)
 
 
 - Project Architecture:
