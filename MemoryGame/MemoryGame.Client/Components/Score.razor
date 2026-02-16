@@ -1,0 +1,36 @@
+@using System.Threading.Tasks
+@inject GameStore GameStore
+@implements IDisposable
+
+<MudPaper Class="pa-2 score-display">Score: @GameStore.Score</MudPaper>
+
+@code {
+    protected override void OnInitialized()
+    {
+        AppEvents.Instance.ScoreUpdated += UpdateScore;
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        AppEvents.Instance.ScoreUpdated -= UpdateScore;
+    }
+
+    private void UpdateScore()
+    {
+        InvokeAsync(StateHasChanged);
+    }
+}
+
+<style>
+    .score-display {
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 1.5em;
+        font-weight: bold;
+        border: 1px solid #4CAF50; /* Green border for scores */
+        box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+    }
+</style>

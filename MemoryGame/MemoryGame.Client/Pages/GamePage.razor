@@ -1,0 +1,137 @@
+﻿@inject IDialogService DialogService;
+@inject NavigationManager NavigationManager;
+@inject GameStore GameStore
+@implements IDisposable
+@page "/game"
+@using System.Threading.Tasks
+@using MemoryGame.Shared.Models
+
+<style>
+    .game-container {
+        width: 100%;
+        max-width: 1200px;
+        /* Limit max width for better presentation on large screens */
+        margin: 20px auto;
+        /* Center the container with some vertical margin */
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+
+    h3 {
+        color: #e0e0e0;
+        /* Light grey color for the heading */
+        margin-bottom: 25px;
+    }
+
+    .header {
+        width: 80%;
+        /* Adjust header width */
+        margin-bottom: 20px;
+        padding: 15px;
+        border-radius: 10px;
+        border: 1px solid #444;
+        /* Subtle border */
+    }
+
+    .grid-container {
+        width: 80%;
+        /* Adjust grid container width */
+        padding: 20px;
+        border-radius: 10px;
+    }
+</style>
+
+<MudContainer class="game-container">
+    <h3>Game Page</h3>
+    @if (GameStore.GameHasStarted)
+    {
+        <MudContainer class="header">
+            <MudStack Row="true" AlignItems="AlignItems.Center">
+                <Score />
+                <Timer />
+            </MudStack>
+        </MudContainer>
+    }
+    @if (GameStore.GameHasStarted)
+    {
+        <CardGrid />
+    }
+    else
+    {
+        <MudContainer Class="grid-container">
+            <MudStack Justify="Justify.Center" Row="false">
+                <MudSelect T="GameDifficulty" Value="difficulty" Variant="Variant.Filled" Label="Game Difficulty"
+                           Placeholder="Select a difficulty" Clearable="true" Modal="true" MultiSelection="false"
+                           ValueChanged="DifficultyChanged">
+                    @foreach (var state in Enum.GetValues(typeof(GameDifficulty)).Cast<GameDifficulty>())
+                    {
+                        <MudSelectItem Value="state">@state.ToString()</MudSelectItem>
+                    }
+                </MudSelect>
+
+                <MudButton Variant="Variant.Filled" Color="Color.Secondary" OnClick="StartGame"> Start Game!! </MudButton>
+            </MudStack>
+        </MudContainer>
+    }
+</MudContainer>
+
+@code {
+    protected override void OnInitialized()
+    {
+        NavigationManager.LocationChanged += OnLocationChanged;
+        if (string.IsNullOrEmpty(GameStore.UserName))
+        {
+            NavigationManager.NavigateTo(uri: "/", forceLoad: true);
+            return;
+        }
+
+        AppEvents.Instance.StoreHasUpdated += UpdateState;
+        AppEvents.Instance.GameOver += ShowGameOverDialog;
+        base.OnInitialized();
+    }
+
+    private bool _isLocationChanged = false;
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        _isLocationChanged = true;
+        AppEvents.Instance.InvokeGameOver();
+    }
+
+    private async void ShowGameOverDialog()
+    {
+        if (_isLocationChanged) return;
+        await DialogService.ShowAsync<GameOverDialog>(title: "Game Over", new DialogOptions
+        {
+            FullWidth = true,
+            CloseOnEscapeKey = false,
+            BackdropClick = false
+        });
+    }
+
+    private async Task StartGame()
+    {
+        await DifficultyChanged(difficulty);
+        GameStore.StartGame();
+    }
+
+    private GameDifficulty difficulty { get; set; } = GameDifficulty.Easy;
+
+    private async Task DifficultyChanged(GameDifficulty value)
+    {
+        await GameStore.UpdateGameDifficulty(value);
+        difficulty = value;
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+        AppEvents.Instance.GameOver -= ShowGameOverDialog;
+        AppEvents.Instance.StoreHasUpdated -= UpdateState;
+    }
+
+    private void UpdateState() => InvokeAsync(StateHasChanged);
+
+}

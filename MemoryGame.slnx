@@ -1,0 +1,8 @@
+<Solution>
+  <Project
+    Path="MemoryGame.Shared/MemoryGame.Shared.csproj"
+    Id="bc8cfeb4-1472-4ee3-ab26-ed198b907b10"
+  />
+  <Project Path="MemoryGame/MemoryGame.Client/MemoryGame.Client.csproj" />
+  <Project Path="MemoryGame/MemoryGame/MemoryGame.csproj" />
+</Solution>

@@ -1,0 +1,63 @@
+@using System.Threading.Tasks
+@inject GameStore GameStore;
+@implements IDisposable
+
+<MudPaper Class="pa-2 timer-display">
+    <MudAlert Severity="_severity" Dense="true" Elevation="0" Class="timer-alert">
+        @if (GameStore.Minutes == 0 && GameStore.Seconds == 0)
+        {
+            <span>
+                TimeUp
+            </span>
+        }
+        else
+        {
+            <span>
+                Time Left: @GameStore.Minutes : @GameStore.Seconds
+            </span>
+        }
+    </MudAlert>
+</MudPaper>
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        AppEvents.Instance.TimeUpdated += UpdateState;
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        AppEvents.Instance.TimeUpdated -= UpdateState;
+    }
+
+    private Severity _severity = Severity.Info;
+    private void UpdateState()
+    {
+        if (GameStore.Minutes < 2)
+        {
+            _severity = Severity.Error;
+        }
+        InvokeAsync(StateHasChanged);
+    }
+}
+
+<style>
+    .timer-display {
+        background-color: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        border-radius: 8px;
+        padding: 10px 20px;
+        font-size: 1.5em;
+        font-weight: bold;
+        border: 1px solid #2196F3; /* Blue border for timer */
+        box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+    }
+
+    .timer-alert {
+        background-color: transparent !important;
+        color: inherit !important;
+        padding: 0 !important;
+    }
+</style>

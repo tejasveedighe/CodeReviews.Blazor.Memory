@@ -1,0 +1,43 @@
+﻿@inject ISnackbar Snackbar
+@inject IDialogService DialogService
+@inject GameStore GameStore;
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Person" Class="mr-3 mb-n1" />
+            Hi, enter your name to begin the game.
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField @bind-Value="@_userName" Placeholder="Enter your name" Label="User Name" ReadOnly="false" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Error" OnClick="OnClick">Start</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    string _userName = string.Empty;
+
+    private async Task OnClick()
+    {
+        // validate name
+        if (string.IsNullOrWhiteSpace(_userName.Trim()))
+        {
+            await DialogService.ShowMessageBox(title: "Warning", message: "Invalid name.");
+        }
+        else
+        {
+            AppEvents.Instance.InvokeUserNameUpdated(_userName);
+            Submit();
+        }
+    }
+
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+}

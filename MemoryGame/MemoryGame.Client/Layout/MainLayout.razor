@@ -1,0 +1,62 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        <MudText Typo="Typo.h5" Class="ml-3">Memory Game</MudText>
+        <MudSpacer />
+        <MudIconButton Icon="@Icons.Custom.Brands.GitHub" Color="Color.Inherit" Link="https://github.com/mudblazor/MudBlazor" Target="_blank" />
+    </MudAppBar>
+    <MudDrawer @bind-Open="@_drawerOpen" Elevation="1">
+        <MudDrawerHeader>
+            <MudText Typo="Typo.h6">Navigation</MudText>
+        </MudDrawerHeader>
+        <MudNavMenu>
+            <MudNavLink Href="/" Match="NavLinkMatch.All" Icon="@Icons.Material.Filled.Home">Home</MudNavLink>
+            <MudNavLink Href="/about" Match="NavLinkMatch.Prefix" Icon="@Icons.Material.Filled.Info">About</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+    <MudMainContent>
+        @Body
+    </MudMainContent>
+
+</MudLayout>
+
+<div id="blazor-error-ui" data-nosnippet>
+    An unhandled error has occurred.
+    <a href="." class="reload">Reload</a>
+    <span class="dismiss">🗙</span>
+</div>
+
+@* Required *@
+<MudThemeProvider Theme="lightTheme" />
+<MudPopoverProvider />
+
+@* Needed for dialogs *@
+<MudDialogProvider />
+
+@* Needed for snackbars *@
+<MudSnackbarProvider />
+
+@code {
+    bool _drawerOpen = false;
+
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    MudTheme lightTheme = new MudTheme()
+    {
+        PaletteDark = new PaletteDark()
+        {
+            Background = Colors.Gray.Darken3,
+        },
+        LayoutProperties = new LayoutProperties()
+        {
+            DrawerWidthLeft = "260px",
+            DrawerWidthRight = "260px"
+        }
+    };
+}

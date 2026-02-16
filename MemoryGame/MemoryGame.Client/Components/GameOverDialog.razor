@@ -1,0 +1,46 @@
+﻿@inject ISnackbar Snackbar;
+@inject NavigationManager NavigationManager;
+@inject GameStore GameStore;
+
+@implements IDisposable
+
+<MudDialog>
+    <TitleContent>
+        <MudText Typo="Typo.h6">
+            <MudIcon Icon="@Icons.Material.Filled.Favorite" Title="Favorite" Class="mr-3 mb-n1" />
+            Game Over
+        </MudText>
+    </TitleContent>
+    <DialogContent>
+        <MudTextField Value="@GameStore.UserName" Label="Your Name" ReadOnly="true" />
+        <MudTextField Value="@GameStore.Score" Label="You Scored" ReadOnly="true" />
+        <MudTextField Value="@GameStore.SelectedDifficulty.ToString()" Label="Difficulty" ReadOnly="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="GoHome">Cancel</MudButton>
+        <MudButton Color="Color.Info" OnClick="Cancel">Play Again?</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter]
+    private IMudDialogInstance MudDialog { get; set; }
+
+    private void GoHome() => NavigationManager.NavigateTo(uri: "/", forceLoad: false);
+
+    private void Cancel() => MudDialog.Cancel();
+
+    protected override void OnInitialized()
+    {
+        AppEvents.Instance.ScoreUpdated += UpdateScore;
+        base.OnInitialized();
+    }
+
+    public void Dispose()
+    {
+        AppEvents.Instance.ScoreUpdated -= UpdateScore;
+    }
+
+    private void UpdateScore() => InvokeAsync(StateHasChanged);
+
+}

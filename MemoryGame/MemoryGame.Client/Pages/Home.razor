@@ -1,0 +1,111 @@
+﻿@inject IDialogService DialogService
+@inject NavigationManager NavigationManager;
+@inject GameStore GameStore;
+@inject HistoryApiService HistoryService;
+
+@implements IDisposable
+@page "/"
+@using MemoryGame.Shared.Models
+
+<MudContainer Class="mt-12">
+    <MudContainer Class="mb-3">
+        <MudButton Disabled="!RendererInfo.IsInteractive" StartIcon="@Icons.Material.Filled.PlayArrow" OnClick="Init"
+                   Color="Color.Success">
+            Start Game
+        </MudButton>
+    </MudContainer>
+
+    <MudContainer>
+        <MudAlert Variant="Variant.Text" Severity="Severity.Normal">Here are some of the scores of players.</MudAlert>
+        <MudTable Virtualize="true" Dense="true" Items="data" Hover="true">
+            <HeaderContent>
+                @foreach (var heading in headings)
+                {
+                    <MudTh>@heading</MudTh>
+                }
+            </HeaderContent>
+            <RowTemplate>
+                <MudTd DataLabel="#">@(context.Id + 1)</MudTd>
+                <MudTd DataLabel="Player Name">@context.UserName</MudTd>
+                <MudTd DataLabel="Score">@context.Score</MudTd>
+                <MudTd DataLabel="Difficulty">@context.Difficulty.ToString()</MudTd>
+                <MudTd DataLabel="Time Played">@(context.GameEndedTime - context.GameStartedTime)</MudTd>
+            </RowTemplate>
+
+            <PagerContent>
+                <MudTablePager />
+            </PagerContent>
+
+        </MudTable>
+    </MudContainer>
+
+    <MudDivider Class="my-8" />
+
+    <MudContainer>
+        <MudText Typo="Typo.h5" Class="mb-4">How to Play</MudText>
+        <MudList T="string">
+            <MudListItem Icon="@Icons.Material.Filled.Info">Click "Start Game" to begin a new memory game.</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Info">Match pairs of cards by flipping them over.</MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Info">Try to find all pairs in the shortest time possible.
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Info">Your score will be recorded based on your performance.
+            </MudListItem>
+            <MudListItem Icon="@Icons.Material.Filled.Info">Have fun and challenge your memory!</MudListItem>
+        </MudList>
+    </MudContainer>
+</MudContainer>
+@code {
+    private List<string> headings = new()
+    {
+        "#",
+        "Player Name",
+        "Score",
+        "Difficulty",
+        "Time Played"
+    };
+
+    private async Task Init()
+    {
+        if (string.IsNullOrWhiteSpace(GameStore.UserName))
+        {
+            await DialogService.ShowAsync<Greeter>("Hello there!", new DialogOptions
+            {
+                CloseOnEscapeKey = true,
+                CloseButton = true,
+                Position = DialogPosition.Center,
+                BackdropClick = false
+            });
+        }
+        else
+        {
+            RedirectHandler();
+        }
+    }
+
+    private void RedirectHandler()
+    {
+        NavigationManager.NavigateTo(uri: "/game", forceLoad: false);
+    }
+
+
+    private void HandleUpdates(string _)
+    {
+        RedirectHandler();
+    }
+
+    protected override void OnInitialized()
+    {
+        AppEvents.Instance.UserNameUpdated += HandleUpdates;
+        base.OnInitialized();
+    }
+
+    List<HistoryItemDto> data = [];
+    protected override async Task OnInitializedAsync()
+    {
+        data = await HistoryService.GetHistoryItemsAsync();
+    }
+    public void Dispose()
+    {
+        AppEvents.Instance.UserNameUpdated -= HandleUpdates;
+    }
+}
